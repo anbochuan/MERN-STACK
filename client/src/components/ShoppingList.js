@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { Container, ListGroup, ListGroupItem, Button } from 'reactstrap';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import uuid from 'uuid';
+
 import { connect } from 'react-redux';
-import { getItems } from '../actions/itemActions';
-import propTypes from 'prop-types';
+import { getItemsAct, deleteItemAct, addItemAct } from '../actions/itemActions';
+import propTypes from 'prop-types'; // form validation
 
 
 class ShoppingList extends Component {
@@ -17,28 +17,19 @@ class ShoppingList extends Component {
     //     ]
     // }
 
+    // lifecycle method 
     componentDidMount() {
-        this.props.getItems();
+        this.props.getItemsAct();
     }
 
+    onDeleteClick = (id) => {
+        this.props.deleteItemAct(id);
+    };
+
     render() {
-        const { items } = this.props.item;
+        const { items } = this.props.itemProps; // item = entire state obj; // items = array inside the state
         return(
             <Container>
-                <Button 
-                  color="dark" 
-                  style={{marginBottom: '2rem'}} 
-                  onClick={() => {
-                      const name = prompt('Enter Item');
-                      if(name) {
-                          this.setState((state) => ({
-                            items: [...state.items, { id: uuid(), name: name}]
-                          }));
-                      }
-                  }}>
-                AddItem
-                </Button>
-
                 <ListGroup>
                     <TransitionGroup className="shopping-list">
                         {items.map(({ id, name }) => (
@@ -48,11 +39,7 @@ class ShoppingList extends Component {
                                         className="remove-btn"
                                         color="danger"
                                         size="sm"
-                                        onClick={() => {
-                                          this.setState((state) => ({
-                                              items: state.items.filter(item => item.id !== id)
-                                          }));
-                                        }}
+                                        onClick={this.onDeleteClick.bind(this, id)}
                                     >&times;</Button>
                                     {name}
                                 </ListGroupItem>
@@ -65,13 +52,15 @@ class ShoppingList extends Component {
     }
 }
 
+// validation
 ShoppingList.propTypes = {
-    getItems: propTypes.func.isRequired,
-    item: propTypes.object.isRequired
+    getItemsAct: propTypes.func.isRequired,
+    itemProps: propTypes.object.isRequired
 }
 
 const mapStateToProps = (state) => ({
-    item: state.item
+    itemProps: state.itemReducer
 });
 
-export default connect(mapStateToProps, { getItems })(ShoppingList);
+// map state into a component properties
+export default connect(mapStateToProps, { getItemsAct, addItemAct, deleteItemAct })(ShoppingList);
